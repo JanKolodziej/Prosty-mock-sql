@@ -15,7 +15,20 @@ private:
     
 
     std::vector< std::vector<std::string>> SelectFrom(std::string From, std::vector<std::string> What);
+	/// <summary>
+	/// Dodaje nowy rekord do bazy
+	/// </summary>
+	/// <param name="Into"></param>
+	/// <param name="Values"></param>
 	void InsertInto(std::string Into, std::vector<std::string> Values);
+
+	/// <summary>
+	/// Zwraca indeksy rekordów spe³niaj¹cych warunek
+	/// </summary>
+	/// <param name="Where nazwa tabeli"></param>
+	/// <param name="Condition wektor z warunkiem w string"></param>
+	/// <returns>Vector indeksów które spe³niaj¹ warunek</returns>
+	std::vector<int> WhereClause(std::string Where, std::vector<std::string> Condition);
     std::vector<Customers> Customers;
 
 public:

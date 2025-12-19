@@ -22,7 +22,6 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				Where = ListofWords[i + 1];
 				break;
 			}
-			else if (ListofWords[i] == ",") { continue; }
 			else
 			{
 				WhatToSelect.push_back(ListofWords[i]);
@@ -30,12 +29,65 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 		}
 		 return SelectFrom(Where, WhatToSelect);
 	}
-	else if (ListofWords[0] == "INSERT" && ListofWords[1] == "INTO")
+	else if (ListofWords[0] == "INSERT" && ListofWords[1] == "INTO" && ListofWords[3] == "VALUES")
 	{
 		Where = ListofWords[2];
-		/*InsertInto(Where)*/
+		std::vector<std::string> Values;
+		for (int i = 4;i < ListofWords.size();i++) 
+		{
+			Values.push_back(ListofWords[i]);
+		}
+		InsertInto(Where, Values);
+		return std::vector< std::vector<std::string>>(); //INSERT nie zwraca nic
 		
 	}
+	/*UPDATE table_name
+		SET column1 = value1, column2 = value2, ...
+		WHERE condition;*/
+	else if (ListofWords[0] == "UPDATE" && ListofWords[2] == "SET")
+	{
+		Where = ListofWords[1];
+		for(int i =2; i<ListofWords.size();i++)
+		{
+			if (ListofWords[i] == "WHERE")
+			{
+				std::vector<std::string> Condition;
+				for (int j = i + 1; j < ListofWords.size(); j++)
+				{
+					Condition.push_back(ListofWords[j]);
+				}
+				std::vector<int> IndicesToUpdate = WhereClause(Where, Condition);
+				for (int& index : IndicesToUpdate)
+				{
+					for (int k = 3; k < i-1; k += 2) // Od 3 do WHERE co 2 (bo mamy pary pole-wartoœæ)
+					{
+						std::string Field = ListofWords[k];
+						std::string Value = ListofWords[k + 1];
+						if (Field == "CustomerID")
+						{
+							Customers[index].CustomerID = std::stoi(Value);
+						}
+						else if (Field == "CompanyName")
+						{
+							Customers[index].CompanyName = Value;
+						}
+						else if (Field == "Address")
+						{
+							Customers[index].Address = Value;
+						}
+						else if (Field == "City")
+						{
+							Customers[index].City = Value;
+						}
+					}
+				}
+				break;
+			}
+		}
+		return std::vector< std::vector<std::string>>(); //UPDATE nie zwraca nic
+
+	}
+		
 
 	
 }
@@ -45,24 +97,33 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 std::vector<std::string> MockDB::BreakDownQuerry(std::string& querry)
 {
 	if (querry.empty()) return std::vector<std::string>();
-	//Musimy podzieliæ zapytanie na pojedyncze s³owa
 	std::string word;
 	std::vector<std::string> ListofWords;
 	querry += ' ';
+	bool inQuotes = false; //Mówi czy jesteœmy w cudzys³owie
 	for (auto& c : querry)
 	{
-		if (c == '\n')
-		{
-			break;
+		if (c == '\'') {
+			inQuotes = !inQuotes; // Prze³¹czamy stan 
+			continue; 
 		}
-		if (c == ' ')
-		{
-			ListofWords.push_back(word);
-			word = "";
-		}
-		else
-		{
+		// Jeœli jesteœmy w cudzys³owie -> dodajemy WSZYSTKO (spacje, przecinki)
+		if (inQuotes) {
 			word += c;
+		}
+		else 
+		{
+			if (c == ' ' || c == ',' || c == '(' || c == ')' || c == '=') {
+				// To s¹ separatory. Jeœli mamy jakieœ s³owo w buforze, zapisujemy je.
+				if (!word.empty()) {
+					ListofWords.push_back(word);
+					word.clear();
+				}
+			}
+			else {
+				// To zwyk³a litera/cyfra, doklejamy do s³owa
+				word += c;
+			}
 		}
 	}
 	return ListofWords;
@@ -132,6 +193,71 @@ void MockDB::InsertInto(std::string Into, std::vector<std::string> Values)
 		Customers.push_back({ std::stoi(Values[0]), Values[1], Values[2], Values[3] });
 	}
 }
+
+std::vector<int> MockDB::WhereClause(std::string Where, std::vector<std::string> Condition)
+{ 
+	std::vector<int> ResultIndices;
+	if (Where == "Customers")
+	{
+		if (Condition.size() == 2) // poniewa¿ usuneliœmy znak '=' podczas rozbijania zapytania
+		{
+			std::string Field = Condition[0];
+			std::string Value = Condition[1];
+			for (int i = 0; i < Customers.size(); i++)
+			{
+				if (Field == "CustomerID" && std::to_string(Customers[i].CustomerID) == Value)
+				{
+					ResultIndices.push_back(i);
+				}
+				else if (Field == "CompanyName" && Customers[i].CompanyName == Value)
+				{
+					ResultIndices.push_back(i);
+				}
+				else if (Field == "Address" && Customers[i].Address == Value)
+				{
+					ResultIndices.push_back(i);
+				}
+				else if (Field == "City" && Customers[i].City == Value)
+				{
+					ResultIndices.push_back(i);
+				}
+			}
+		}	
+		else if (Condition.size() == 3) // mamy np: CustomerID > 5
+		{
+			std::string Field = Condition[0];
+			std::string Operator = Condition[1];
+			std::string Value = Condition[2];
+			for (int i = 0; i < Customers.size(); i++)
+			{
+				if (Field == "CustomerID") //Sprawdzenie tylko dla CustomerID, bo inne pola s¹ stringami
+				{
+					int CustomerIDValue = std::stoi(Value);
+					if (Operator == ">" && Customers[i].CustomerID > CustomerIDValue)
+					{
+						ResultIndices.push_back(i);
+					}
+					else if (Operator == "<" && Customers[i].CustomerID < CustomerIDValue)
+					{
+						ResultIndices.push_back(i);
+					}
+					else if (Operator == ">=" && Customers[i].CustomerID >= CustomerIDValue)
+					{
+						ResultIndices.push_back(i);
+					}
+					else if (Operator == "<=" && Customers[i].CustomerID <= CustomerIDValue)
+					{
+						ResultIndices.push_back(i);
+					}
+				}
+			}
+		}
+			
+		
+	}
+	return ResultIndices;
+}
+
 
 		
 			
