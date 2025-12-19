@@ -14,7 +14,7 @@ private:
     std::vector<std::string> BreakDownQuerry(std::string& querry);
     
 
-    std::vector< std::vector<std::string>> SelectFrom(std::string From, std::vector<std::string> What);
+    std::vector< std::vector<std::string>> SelectFrom(std::string From, std::vector<std::string> What,std::vector<int> IndicesToSelectFrom);
 	/// <summary>
 	/// Dodaje nowy rekord do bazy
 	/// </summary>

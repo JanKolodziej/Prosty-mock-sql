@@ -20,6 +20,8 @@ int main()
 	// Przyk³ad: SELECT * FROM Customers
 	//Program nie zadzia³a z np: Select *  FROM Customers
 	MockDB db;
+	cout << "Initial database state:" << endl;
+	cout << "----------------" << endl;
 	string querry_show_all = "SELECT * FROM Customers";
 	auto result = db.executeQuerry(querry_show_all);
 
@@ -32,6 +34,8 @@ int main()
 	cout << "----------------" << endl;
 
 	//Pokazanie tylko ID firmy i miasta
+	cout << "Showing only CompanyID and City:" << endl;
+	cout << "----------------" << endl;
 	string querry_show_City_ID = "SELECT CustomerID,City FROM Customers";
 	 result = db.executeQuerry(querry_show_City_ID);
 
@@ -45,6 +49,8 @@ int main()
 
 
 	//INSERT INTO Customers (CustomerID, CompanyName, Address, City) 
+	cout << "Inserting a new record:" << endl;
+	cout << "----------------" << endl;
 	string querry_insert = "INSERT INTO Customers VALUES 6, 'New Company', 'New Address', 'New City'";
 	db.executeQuerry(querry_insert);
 	auto result_after_insert = db.executeQuerry(querry_show_all);
@@ -56,10 +62,23 @@ int main()
 	}
 	cout << "----------------" << endl;
 
-	// Przyk³ad: SELECT * FROM Customers WhERE CustomerID = 3
+	// Przyk³ad: SELECT * FROM Customers WHERE CustomerID > 3
+	cout << "Records with CustomerID > 3:" << endl;
+	cout << "----------------" << endl;
+	string querry_select_where = "SELECT * FROM Customers WHERE CustomerID > 3";
+	 result = db.executeQuerry(querry_select_where);
 
+	for (const auto& row : result) {
+		for (const auto& col : row) {
+			cout << col << " ";
+		}
+		cout << endl;
+	}
+	cout << "----------------" << endl;
 
 	//UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1;
+	cout << "Updating record with CustomerID = 1:" << endl;
+	cout << "----------------" << endl;
 	string querry_update = "UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1";
 	db.executeQuerry(querry_update);
 	auto result_after_update = db.executeQuerry(querry_show_all);

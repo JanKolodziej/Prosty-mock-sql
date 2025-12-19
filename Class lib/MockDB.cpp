@@ -11,15 +11,33 @@ MockDB::MockDB()
 std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry)
 {
 	std::vector<std::string> ListofWords = BreakDownQuerry(querry);
-	std::string Where;
+	std::string WhereTable;
 	if (ListofWords[0] == "SELECT")
 	{
 		std::vector<std::string> WhatToSelect;
-		for (int i=1;i<ListofWords.size();i++)
+
+		std::vector<int> IndicesToSelectFrom;
+		for(int i=0; i < Customers.size(); i++)
+		{
+			IndicesToSelectFrom.push_back(i);
+		}
+		
+		for (int i = 1; i < ListofWords.size();i++)
 		{
 			if (ListofWords[i] == "FROM")
 			{
-				Where = ListofWords[i + 1];
+				WhereTable = ListofWords[i + 1];
+			}
+			else if (ListofWords[i] == "WHERE")
+			{
+				std::vector<std::string> Condition;
+				for (int j = i + 1; j < ListofWords.size(); j++)
+				{
+					Condition.push_back(ListofWords[j]);
+				}
+				IndicesToSelectFrom = std::vector<int>();
+				IndicesToSelectFrom = WhereClause(WhereTable, Condition);
+				
 				break;
 			}
 			else
@@ -27,17 +45,17 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				WhatToSelect.push_back(ListofWords[i]);
 			}
 		}
-		 return SelectFrom(Where, WhatToSelect);
+		 return SelectFrom(WhereTable, WhatToSelect, IndicesToSelectFrom);
 	}
 	else if (ListofWords[0] == "INSERT" && ListofWords[1] == "INTO" && ListofWords[3] == "VALUES")
 	{
-		Where = ListofWords[2];
+		WhereTable = ListofWords[2];
 		std::vector<std::string> Values;
 		for (int i = 4;i < ListofWords.size();i++) 
 		{
 			Values.push_back(ListofWords[i]);
 		}
-		InsertInto(Where, Values);
+		InsertInto(WhereTable, Values);
 		return std::vector< std::vector<std::string>>(); //INSERT nie zwraca nic
 		
 	}
@@ -46,7 +64,7 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 		WHERE condition;*/
 	else if (ListofWords[0] == "UPDATE" && ListofWords[2] == "SET")
 	{
-		Where = ListofWords[1];
+		WhereTable = ListofWords[1];
 		for(int i =2; i<ListofWords.size();i++)
 		{
 			if (ListofWords[i] == "WHERE")
@@ -56,7 +74,7 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				{
 					Condition.push_back(ListofWords[j]);
 				}
-				std::vector<int> IndicesToUpdate = WhereClause(Where, Condition);
+				std::vector<int> IndicesToUpdate = WhereClause(WhereTable, Condition);
 				for (int& index : IndicesToUpdate)
 				{
 					for (int k = 3; k < i-1; k += 2) // Od 3 do WHERE co 2 (bo mamy pary pole-wartoœæ)
@@ -129,7 +147,7 @@ std::vector<std::string> MockDB::BreakDownQuerry(std::string& querry)
 	return ListofWords;
 }
 
-std::vector< std::vector<std::string>> MockDB::SelectFrom(std::string From, std::vector<std::string> What)
+std::vector< std::vector<std::string>> MockDB::SelectFrom(std::string From, std::vector<std::string> What,std::vector<int> IndicesToSelectFrom)
 {
 	if (From == "Customers")
 	{
@@ -167,13 +185,13 @@ std::vector< std::vector<std::string>> MockDB::SelectFrom(std::string From, std:
 		}
 		std::vector< std::vector<std::string>> Result;
 
-		for (auto& element : Customers)
+		for (auto& element : IndicesToSelectFrom)
 		{
 			std::vector<std::string> Row;
-			if (hasID) Row.push_back(std::to_string(element.CustomerID));
-			if (hasCompanyName) Row.push_back(element.CompanyName);
-			if(hasAddress) Row.push_back(element.Address);
-			if (hasCity) Row.push_back(element.City);
+			if (hasID) Row.push_back(std::to_string(Customers[element].CustomerID));
+			if (hasCompanyName) Row.push_back(Customers[element].CompanyName);
+			if(hasAddress) Row.push_back(Customers[element].Address);
+			if (hasCity) Row.push_back(Customers[element].City);
 			Result.push_back(Row);
 
 		}
