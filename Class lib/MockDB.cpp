@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "MockDB.h"
+#include <algorithm>
 MockDB::MockDB()
 {
 	Customers.push_back({ 1,"Alfreds Futterkiste","Obere Str. 57","Berlin" });
@@ -103,6 +104,37 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 			}
 		}
 		return std::vector< std::vector<std::string>>(); //UPDATE nie zwraca nic
+
+	}
+	else if (ListofWords[0] == "DELETE")
+	{
+		if (ListofWords[1] == "FROM")
+		{
+			WhereTable = ListofWords[2];
+			for (int i = 3; i < ListofWords.size(); i++)
+			{
+				if (ListofWords[i] == "WHERE")
+				{
+					std::vector<std::string> Condition;
+					for (int j = i + 1; j < ListofWords.size(); j++)
+					{
+						Condition.push_back(ListofWords[j]);
+					}
+					std::vector<int> IndicesToDelete = WhereClause(WhereTable, Condition);
+					// Usuwanie w odwrotnej kolejnoœci, aby nie zmieniaæ indeksów podczas usuwania
+					std::sort(IndicesToDelete.rbegin(), IndicesToDelete.rend());
+					for (int& index : IndicesToDelete)
+					{
+						if (WhereTable == "Customers")
+						{
+							Customers.erase(Customers.begin() + index);
+						}
+					}
+					break;
+				}
+			}
+		}
+		return std::vector< std::vector<std::string>>(); //DELETE nie zwraca nic
 
 	}
 		

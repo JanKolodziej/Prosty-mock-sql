@@ -90,5 +90,18 @@ int main()
 	}
 	cout << "----------------" << endl;
 
+	//DELETE Customers WHERE CompanyName = 'Alfred Schmidt'
+	cout << "Deleting record with CompanyName = 'Alfred Schmidt':" << endl;
+	cout << "----------------" << endl;
+	string querry_delete = "DELETE FROM Customers WHERE CompanyName = 'Alfred Schmidt'";
+	db.executeQuerry(querry_delete);
+	auto result_after_delete = db.executeQuerry(querry_show_all);
+	for (const auto& row : result_after_delete) {
+		for (const auto& col : row) {
+			cout << col << " ";
+		}
+		cout << endl;
+	}
+	cout << "----------------" << endl;
 
 }
