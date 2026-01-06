@@ -13,7 +13,13 @@ private:
     /// <returns></returns>
     std::vector<std::string> BreakDownQuerry(std::string& querry);
     
-
+    /// <summary>
+	/// Zwraca wybrane kolumny z tabeli dla podanych indeksów
+    /// </summary>
+    /// <param name="From Nazwa Tabeli"></param>
+    /// <param name="What Co wybraæ"></param>
+    /// <param name="IndicesToSelectFrom Indeksy do wybrania spoœród tabeli"></param>
+    /// <returns></returns>
     std::vector< std::vector<std::string>> SelectFrom(std::string From, std::vector<std::string> What,std::vector<int> IndicesToSelectFrom);
 	/// <summary>
 	/// Dodaje nowy rekord do bazy
@@ -36,6 +42,6 @@ public:
     /// Wykonuje zapytanie podane w SQL
     /// </summary>
     /// <param name="querry"></param>
-    std::vector< std::vector<std::string>> executeQuerry(std::string&  querry) override;
+    void  executeQuerry(std::string&  querry) override;
 	MockDB();
 };

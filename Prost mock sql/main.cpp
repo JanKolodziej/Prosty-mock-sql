@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "../Class lib/IDataBase.h"
 #include "../Class lib/MockDB.h"
+#include "../Class lib/RealDB.h"
 using namespace std;
 
 int main()
@@ -9,99 +11,95 @@ int main()
 	cout << "----------------" << endl;
 	cout << "| Sql mock 1.0 |" << endl;
 	cout << "----------------" << endl;
-
-	/*cout << "Podaj instrukcje: ";*/
-	/*string wejscie;
-	getline(cin, wejscie);
-	cout << wejscie;*/
-
-	//Wszytkie zapytania musz¹ byæ podane w jednej linii
-	// W "idealym" formacie SQL
-	// Przyk³ad: SELECT * FROM Customers
-	//Program nie zadzia³a z np: Select *  FROM Customers
-	MockDB db;
-	cout << "Initial database state:" << endl;
+	cout << "Chcesz pracowac na:" << endl;
+	cout << "1. Prawdziwej bazie danych (wymaga pliku CustomerDb.db)" << endl;
+	cout << "2. Mock bazie danych (dane przechowywane w pamiêci)" << endl;
+	IDataBase* db; //wskaŸnik na baze danych
+	string wejscie;
+	cin >> wejscie;
 	cout << "----------------" << endl;
-	string querry_show_all = "SELECT * FROM Customers";
-	auto result = db.executeQuerry(querry_show_all);
-
-	for (const auto& row : result) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
+	if (wejscie == "1")
+	{
+		cout << "Praca na prawdziwej bazie danych" << endl;
+		db = new RealDB();
+	}
+	else
+	{
+		cout << "Praca na mock bazie danych" << endl;
+		db = new MockDB();	
 	}
 	cout << "----------------" << endl;
-
-	//Pokazanie tylko ID firmy i miasta
-	cout << "Showing only CompanyID and City:" << endl;
+	cout << "Chcesz zobaczyæ przykladowe zapytania \"1\", Czy napisac wlasne? \" 0\": ";
+	cin >> wejscie;
 	cout << "----------------" << endl;
-	string querry_show_City_ID = "SELECT CustomerID,City FROM Customers";
-	 result = db.executeQuerry(querry_show_City_ID);
+	if (wejscie == "1")
+	{
+		string querry;
+		//cout testowy/ pokazauj¹ce co potrafi program
+		cout << "Poczatkowa Baza danych:" << endl;
+		cout << "----------------" << endl;
+		querry = "SELECT * FROM Customers";
+		db->executeQuerry(querry);
 
-	for (const auto& row : result) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
+
+		//Pokazanie tylko ID firmy i miasta
+		cout << "Pokazuje tylko CompanyID i City:" << endl;
+		cout << "----------------" << endl;
+		querry = "SELECT CustomerID,City FROM Customers";
+		db->executeQuerry(querry);
+
+
+
+		//INSERT INTO Customers (CustomerID, CompanyName, Address, City) 
+		cout << "Dodajemy nowy rekord:" << endl;
+		cout << "----------------" << endl;
+		querry = "INSERT INTO Customers VALUES 6, 'New Company', 'New Address', 'New City'";
+		db->executeQuerry(querry);
+
+
+		// Przyk³ad: SELECT * FROM Customers WHERE CustomerID > 3
+		cout << "Rekordy z  CustomerID > 3:" << endl;
+		cout << "----------------" << endl;
+		querry = "SELECT * FROM Customers WHERE CustomerID > 3";
+		db->executeQuerry(querry);
+
+		//UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1;
+		cout << "Zmiana rekordu z CustomerID = 1:" << endl;
+		cout << "----------------" << endl;
+		querry = "UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1";
+		db->executeQuerry(querry);
+
+
+		//DELETE Customers WHERE CompanyName = 'Alfred Schmidt'
+		cout << "Usuwanie rekordu z CompanyName = 'Alfred Schmidt':" << endl;
+		cout << "----------------" << endl;
+		querry = "DELETE FROM Customers WHERE CompanyName = 'Alfred Schmidt'";
+		db->executeQuerry(querry);
+
+		cout << "Baza danych po wszystkich zmianach:" << endl;
+		cout << "----------------" << endl;
+		querry = "SELECT * FROM Customers";
+		db->executeQuerry(querry);
 	}
-	cout << "----------------" << endl;
+	else
+	{
+		cout << "---------------------------------------------------------------------------------" << endl;
+		cout << "Kilka zasad do przestrzegania:" << endl;
+		cout << "1. Wszystkie zapytania musza byc podane w jednej linii" << endl;
+		cout << "2. Zapytania musz¹ byæ w idealnym formacie SQL" << endl;
+		cout << "3. Dostêpne tabele: Customers" << endl;
+		cout << "4. Dostêpne kolumny w tabeli Customers: CustomerID, CompanyName, Address, City" << endl;
+		cout << "5. Na ten moment program obs³uguje komendy INSERT, SELECT, DELETE,UPDATE,WHERE" << endl;
+		cout << "----------------------------------------------------------------------------------" << endl;
+		cout << "Podaj zapytanie: ";
+		string querry;
+		cin.ignore();
+		getline(cin,querry);
+		db->executeQuerry(querry);
 
-
-	//INSERT INTO Customers (CustomerID, CompanyName, Address, City) 
-	cout << "Inserting a new record:" << endl;
-	cout << "----------------" << endl;
-	string querry_insert = "INSERT INTO Customers VALUES 6, 'New Company', 'New Address', 'New City'";
-	db.executeQuerry(querry_insert);
-	auto result_after_insert = db.executeQuerry(querry_show_all);
-	for (const auto& row : result_after_insert) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
 	}
-	cout << "----------------" << endl;
 
-	// Przyk³ad: SELECT * FROM Customers WHERE CustomerID > 3
-	cout << "Records with CustomerID > 3:" << endl;
-	cout << "----------------" << endl;
-	string querry_select_where = "SELECT * FROM Customers WHERE CustomerID > 3";
-	 result = db.executeQuerry(querry_select_where);
 
-	for (const auto& row : result) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
-	}
-	cout << "----------------" << endl;
-
-	//UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1;
-	cout << "Updating record with CustomerID = 1:" << endl;
-	cout << "----------------" << endl;
-	string querry_update = "UPDATE Customers SET CompanyName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1";
-	db.executeQuerry(querry_update);
-	auto result_after_update = db.executeQuerry(querry_show_all);
-	for (const auto& row : result_after_update) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
-	}
-	cout << "----------------" << endl;
-
-	//DELETE Customers WHERE CompanyName = 'Alfred Schmidt'
-	cout << "Deleting record with CompanyName = 'Alfred Schmidt':" << endl;
-	cout << "----------------" << endl;
-	string querry_delete = "DELETE FROM Customers WHERE CompanyName = 'Alfred Schmidt'";
-	db.executeQuerry(querry_delete);
-	auto result_after_delete = db.executeQuerry(querry_show_all);
-	for (const auto& row : result_after_delete) {
-		for (const auto& col : row) {
-			cout << col << " ";
-		}
-		cout << endl;
-	}
-	cout << "----------------" << endl;
+	
 
 }

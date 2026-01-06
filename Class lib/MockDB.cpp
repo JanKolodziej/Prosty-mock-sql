@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "MockDB.h"
 #include <algorithm>
+#include <iostream>
 MockDB::MockDB()
 {
 	Customers.push_back({ 1,"Alfreds Futterkiste","Obere Str. 57","Berlin" });
@@ -9,7 +10,7 @@ MockDB::MockDB()
 	Customers.push_back({ 4,"Around the Horn","120 Hanover Sq.","London" });
 	Customers.push_back({ 5,"Berglunds snabbkop","Berguvsvagen 8","Lulea" });
 }
-std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry)
+void MockDB::executeQuerry(std::string& querry)
 {
 	std::vector<std::string> ListofWords = BreakDownQuerry(querry);
 	std::string WhereTable;
@@ -46,7 +47,15 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				WhatToSelect.push_back(ListofWords[i]);
 			}
 		}
-		 return SelectFrom(WhereTable, WhatToSelect, IndicesToSelectFrom);
+		std::vector< std::vector<std::string>> result = SelectFrom(WhereTable, WhatToSelect, IndicesToSelectFrom);
+		std::cout << "----------------" << std::endl;
+		for (const auto& row : result) {
+			for (const auto& col : row) {
+				std::cout << col << " ";
+			}
+			std::cout << std::endl;
+		}
+		std::cout << "----------------" << std::endl;
 	}
 	else if (ListofWords[0] == "INSERT" && ListofWords[1] == "INTO" && ListofWords[3] == "VALUES")
 	{
@@ -57,12 +66,9 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 			Values.push_back(ListofWords[i]);
 		}
 		InsertInto(WhereTable, Values);
-		return std::vector< std::vector<std::string>>(); //INSERT nie zwraca nic
+
 		
 	}
-	/*UPDATE table_name
-		SET column1 = value1, column2 = value2, ...
-		WHERE condition;*/
 	else if (ListofWords[0] == "UPDATE" && ListofWords[2] == "SET")
 	{
 		WhereTable = ListofWords[1];
@@ -103,7 +109,6 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				break;
 			}
 		}
-		return std::vector< std::vector<std::string>>(); //UPDATE nie zwraca nic
 
 	}
 	else if (ListofWords[0] == "DELETE")
@@ -134,8 +139,6 @@ std::vector< std::vector<std::string>> MockDB::executeQuerry(std::string& querry
 				}
 			}
 		}
-		return std::vector< std::vector<std::string>>(); //DELETE nie zwraca nic
-
 	}
 		
 
@@ -188,7 +191,7 @@ std::vector< std::vector<std::string>> MockDB::SelectFrom(std::string From, std:
 		bool hasAddress = false;
 		bool hasCity = false;
 
-		for (auto& element : What)
+		for (const auto& element : What)
 		{
 			if (element == "*")
 			{
@@ -217,7 +220,7 @@ std::vector< std::vector<std::string>> MockDB::SelectFrom(std::string From, std:
 		}
 		std::vector< std::vector<std::string>> Result;
 
-		for (auto& element : IndicesToSelectFrom)
+		for (const auto& element : IndicesToSelectFrom)
 		{
 			std::vector<std::string> Row;
 			if (hasID) Row.push_back(std::to_string(Customers[element].CustomerID));
