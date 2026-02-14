@@ -58,7 +58,8 @@ Dzięki zastosowaniu interfejsu `IDataBase`, aplikacja kliencka nie musi wiedzie
 2.  Upewnij się, że projekt **Prosty mock sql** jest ustawiony jako projekt startowy (Prawy przycisk myszy -> *Set as Startup Project*).
 3.  **Ważne dla SQLite:** Jeśli kompilacja `sqlite3.c` zgłasza błędy, upewnij się, że wyłączono dla tego pliku prekompilowane nagłówki:
     * Prawy przycisk na `sqlite3.c` -> *Properties* -> *C/C++* -> *Precompiled Headers* -> **Not Using Precompiled Headers**.
-4.  Skompiluj i uruchom rozwiązanie (`Ctrl + F5`).
+4.  W przypadku korzystania z prawdziwej bazy danych upewnij się, że w folderze rozwiązania znajduje się plik "CustomerDb.db"
+5.  Skompiluj i uruchom rozwiązanie (`Ctrl + F5`).
 
 ## 📖 Przykłady użycia
 
