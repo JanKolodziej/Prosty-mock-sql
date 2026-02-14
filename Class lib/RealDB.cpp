@@ -6,19 +6,35 @@ RealDB::RealDB()
 	int rc = sqlite3_open("CustomerDb.db", &db);
 	if (rc)
 	{
-		std::cerr << "Nie mo¿na otworzyæ bazy danych: " << sqlite3_errmsg(db) << std::endl;
+		std::cerr << "Nie mozna otworzyc bazy danych: " << sqlite3_errmsg(db) << std::endl;
 	}
 	else
 	{
-		std::cout << "Uda³o siê po³¹czyæ z baz¹" << std::endl;
+		std::cout << "Udalo sie polaczyæ z baza" << std::endl;
 	}
+}
+// Ta funkcja jest wo³ana przez SQLite automatycznie dla ka¿dego wiersza
+// argc = liczba kolumn
+// argv = tablica wartoœci (np. "Jan")
+// azColName = tablica nazw kolumn (np. "Imie")
+static int wypiszWiersz(void* NotUsed, int argc, char** argv, char** azColName) {
+
+	std::cout << ">>> ZNALEZIONO REKORD:\n";
+
+	for (int i = 0; i < argc; i++) {
+		std::cout << "    " << azColName[i] << " = " << (argv[i] ? argv[i] : "NULL") << "\n";
+	}
+
+	std::cout << "---------------------------------\n";
+
+	return 0; 
 }
 
 void RealDB::executeQuerry(std::string&	 querry)
 {
 	std::cout << "Wykonuje zapytanie na prwawdziwej bazie danych: " << querry << std::endl;
 	char* errMsg = 0;
-	int rc = sqlite3_exec(db, querry.c_str(), 0, 0, &errMsg);
+	int rc = sqlite3_exec(db, querry.c_str(), wypiszWiersz, 0, &errMsg);
 	if(rc != SQLITE_OK)
 	{
 		std::cerr << "SQL error: " << errMsg << std::endl;
